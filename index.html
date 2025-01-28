@@ -81,42 +81,41 @@
         function generateReport() {
     let report = "";
 
-    Object.keys(attendanceData).forEach(year => {
-        report += `** ชั้นปีที่ ${year} **\n`;
+    // วนลูปตามห้องที่มีในข้อมูล
+    Object.keys(attendanceData).forEach(room => {
+        report += `** ห้อง ${room} **\n`; // แสดงห้องเรียน
 
-        Object.keys(attendanceData).forEach(room => {
-            let studentList = [];
+        // วนลูปตามชั้นปีภายในห้อง
+        Object.keys(attendanceData[room]).forEach(year => {
+            report += `${year} = `;
+            let yearReport = [];
 
-            Object.keys(attendanceData[room]).forEach(yearInRoom => {
-                if (year === yearInRoom) {
-                    let roomReport = `${room} = `;
+            // ดึงข้อมูลนักเรียนในแต่ละชั้นปี
+            attendanceData[room][year].forEach(student => {
+                let status = document.querySelector(`input[name="status_${room}_${year}_${student}"]:checked`);
+                let reason = document.getElementById(`reason_${room}_${year}_${student}`).value.trim();
 
-                    attendanceData[room][yearInRoom].forEach(student => {
-                        let status = document.querySelector(`input[name="status_${room}_${year}_${student}"]:checked`);
-                        let reason = document.getElementById(`reason_${room}_${year}_${student}`).value.trim();
-                        
-                        if (status) {
-                            if (status.value.endsWith("-ไม่อยู่")) {
-                                studentList.push(`${student} ${reason || "ไม่ระบุ"}`);
-                            } else {
-                                studentList.push(student);
-                            }
-                        }
-                    });
-
-                    if (studentList.length > 0) {
-                        report += roomReport + studentList.join(" ") + "\n";
+                // ตรวจสอบสถานะของนักเรียน
+                if (status) {
+                    if (status.value.endsWith("-ไม่อยู่")) {
+                        yearReport.push(`${student} ${reason || "ไม่ระบุ"}`); // ถ้าไม่อยู่, เพิ่มเหตุผล
+                    } else {
+                        yearReport.push(student); // ถ้าอยู่, แค่เพิ่มรหัสนักเรียน
                     }
                 }
             });
+
+            // ถ้ามีข้อมูลนักเรียนในชั้นปีนั้น ให้แสดงผล
+            if (yearReport.length > 0) {
+                report += yearReport.join(" ") + "\n";
+            }
         });
 
-        report += "\n";
+        report += "\n"; // เพิ่มช่องว่างระหว่างแต่ละห้อง
     });
 
-    document.getElementById("output").value = report.trim();
+    document.getElementById("output").value = report.trim(); // แสดงผลใน textarea
 }
-
         window.onload = showStudentTable;
     </script>
 </body>
