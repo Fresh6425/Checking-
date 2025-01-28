@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อ</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #f4f4f4; }
+        input[type="text"] { width: 100px; padding: 5px; }
+        .container { margin-top: 20px; }
+        .submit-btn { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>ระบบเช็คชื่อ</h1>
+    
+    <label for="year">เลือกชั้นปี:</label>
+    <select id="year" onchange="updateRooms()">
+        <option value="">-- เลือกชั้นปี --</option>
+        <option value="ปี 1">ปี 1</option>
+        <option value="ปี 2">ปี 2</option>
+        <option value="ปี 3">ปี 3</option>
+        <option value="ปี 4">ปี 4</option>
+    </select>
+
+    <label for="room">เลือกห้อง:</label>
+    <select id="room" onchange="showStudents()">
+        <option value="">-- เลือกห้อง --</option>
+    </select>
+
+    <div id="student-list"></div>
+
+    <button class="submit-btn" onclick="generateReport()">บันทึกข้อมูล</button>
+
+    <h2>ผลลัพธ์</h2>
+    <textarea id="output" rows="10" cols="80" readonly></textarea>
+
+    <script>
+        const attendanceData = {
+            "ปี 1": {
+                "301": ["027", "028"],
+                "302": ["029", "050"],
+                "304": ["030", "031", "035", "037"],
+                "305": ["038", "039"],
+                "309/2": ["042"],
+                "310": ["043"],
+                "311": ["044"],
+                "312": ["045"],
+                "315": ["046", "047"],
+                "316": ["049", "048", "041", "051"],
+                "318": ["052", "053"]
+            },
+            "ปี 2": {
+                "307": ["015", "104"],
+                "309/1": ["106", "107"],
+                "309/2": ["134", "139"],
+                "314": ["122"],
+                "312": ["136", "137", "138"],
+                "313": ["002", "023", "025", "028"],
+                "315": ["108", "109"]
+            },
+            "ปี 3": {
+                "301": ["53", "55"],
+                "302": ["61", "78"],
+                "303": ["63", "62", "64", "65"],
+                "305": ["131", "57"],
+                "306": ["58"],
+                "308": ["76", "79", "77"],
+                "309/2": ["122"],
+                "310": ["66", "69", "132"],
+                "314": ["71", "72", "75"],
+                "317": ["80", "82", "83", "84"],
+                "318": ["85", "86"]
+            },
+            "ปี 4": {
+                "319": ["02", "06", "26", "103"],
+                "306": ["25", "19", "32"],
+                "307": ["17", "43"],
+                "309/1": ["125", "80"],
+                "311": ["85", "93", "97"]
+            }
+        };
+
+        function updateRooms() {
+            let year = document.getElementById("year").value;
+            let roomSelect = document.getElementById("room");
+            roomSelect.innerHTML = '<option value="">-- เลือกห้อง --</option>';
+
+            if (attendanceData[year]) {
+                Object.keys(attendanceData[year]).forEach(room => {
+                    let option = document.createElement("option");
+                    option.value = room;
+                    option.textContent = room;
+                    roomSelect.appendChild(option);
+                });
+            }
+        }
+
+        function showStudents() {
+            let year = document.getElementById("year").value;
+            let room = document.getElementById("room").value;
+            let studentList = document.getElementById("student-list");
+
+            if (!room || !attendanceData[year] || !attendanceData[year][room]) {
+                studentList.innerHTML = "";
+                return;
+            }
+
+            let students = attendanceData[year][room];
+            let table = `<table>
+                            <tr>
+                                <th>รหัสนักเรียน</th>
+                                <th>อยู่</th>
+                                <th>ไม่อยู่</th>
+                                <th>เหตุผล (ถ้าไม่อยู่)</th>
+                            </tr>`;
+            students.forEach(student => {
+                table += `<tr>
+                            <td>${student}</td>
+                            <td><input type="radio" name="status_${student}" value="✔ ครบ"></td>
+                            <td><input type="radio" name="status_${student}" value="❌"></td>
+                            <td><input type="text" id="reason_${student}" placeholder="ระบุเหตุผล"></td>
+                          </tr>`;
+            });
+            table += `</table>`;
+            studentList.innerHTML = table;
+        }
+
+        function generateReport() {
+            let year = document.getElementById("year").value;
+            let room = document.getElementById("room").value;
+            let students = attendanceData[year][room];
+            let report = `** ${year} **\n${room} = `;
+
+            students.forEach(student => {
+                let status = document.querySelector(`input[name="status_${student}"]:checked`);
+                let reason = document.getElementById(`reason_${student}`).value.trim();
+
+                if (status) {
+                    if (status.value === "✔ ครบ") {
+                        report += `${student} ครบ `;
+                    } else {
+                        report += `${student} ${reason || "ไม่ระบุ"} `;
+                    }
+                } else {
+                    report += `${student} ไม่ได้เช็ค `;
+                }
+            });
+
+            document.getElementById("output").value = report.trim();
+        }
+    </script>
+</body>
+</html>
