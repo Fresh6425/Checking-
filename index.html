@@ -79,42 +79,43 @@
         }
 
         function generateReport() {
-            let report = "";
+    let report = "";
 
-            Object.keys(attendanceData).forEach(year => {
-                report += `** ชั้นปีที่ ${year} **\n`;
+    Object.keys(attendanceData).forEach(year => {
+        report += `** ชั้นปีที่ ${year} **\n`;
 
-                Object.keys(attendanceData).forEach(room => {
+        Object.keys(attendanceData).forEach(room => {
+            let studentList = [];
+
+            Object.keys(attendanceData[room]).forEach(yearInRoom => {
+                if (year === yearInRoom) {
                     let roomReport = `${room} = `;
-                    let studentList = [];
 
-                    Object.keys(attendanceData[room]).forEach(yearInRoom => {
-                        if (year === yearInRoom) {
-                            attendanceData[room][yearInRoom].forEach(student => {
-                                let status = document.querySelector(`input[name="status_${room}_${year}_${student}"]:checked`);
-                                let reason = document.getElementById(`reason_${room}_${year}_${student}`).value.trim();
-                                
-                                if (status) {
-                                    if (status.value.endsWith("-ไม่อยู่")) {
-                                        studentList.push(`${student} ${reason || "ไม่ระบุ"}`);
-                                    } else {
-                                        studentList.push(student);
-                                    }
-                                }
-                            });
+                    attendanceData[room][yearInRoom].forEach(student => {
+                        let status = document.querySelector(`input[name="status_${room}_${year}_${student}"]:checked`);
+                        let reason = document.getElementById(`reason_${room}_${year}_${student}`).value.trim();
+                        
+                        if (status) {
+                            if (status.value.endsWith("-ไม่อยู่")) {
+                                studentList.push(`${student} ${reason || "ไม่ระบุ"}`);
+                            } else {
+                                studentList.push(student);
+                            }
                         }
                     });
 
                     if (studentList.length > 0) {
                         report += roomReport + studentList.join(" ") + "\n";
                     }
-                });
-
-                report += "\n";
+                }
             });
+        });
 
-            document.getElementById("output").value = report.trim();
-        }
+        report += "\n";
+    });
+
+    document.getElementById("output").value = report.trim();
+}
 
         window.onload = showStudentTable;
     </script>
